@@ -13,7 +13,7 @@ export default function Navbar() {
       <Link to="/">
         <img src={Logo} alt="Logo" style={
           {
-            width:"48px",height:'48px',margin:'0 20px'
+            width:"48px",height:'48px',margin:'0 20px',borderBottom:'3px solid #ff2626'
           }
         } />
       </Link>
@@ -27,9 +27,9 @@ export default function Navbar() {
       textDecoration:'none',color:'#3A1212',
       borderBottom:'3p solid #FF2626'
     }}>Home</Link>
-<a href='/' style={{
+<Link to='/' style={{
   textDecoration:'none',color:'#3A1212'
-}}>Exercises</a>
+}}>Exercises</Link>
     </Stack>
     </Stack>
   );

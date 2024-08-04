@@ -2,71 +2,72 @@ import React, { useEffect, useState } from 'react';
 import { Box, Button, Stack, TextField, Typography } from '@mui/material';
 import HorizontalScrollBar from '../HorizontalScrollBar';
 
-export default function SearchExercises() {
-  // Initiating the states
+export default function SearchExercises({ setExercises, bodyPart, setBodyPart }) {
   const [search, setSearch] = useState('');
-  const [exercises, setExercises] = useState([]);
-  const [bodyPart, setBodyParts] = useState([]);
+  const [allExercises, setAllExercises] = useState([]);
 
-  // Implementing the bodyPart menu loads as soon as the page refreshes
+  // Fetch body parts and exercises data on mount
   useEffect(() => {
-    const fetchExerciseData = async () => {
-      const url = 'https://exercisedb.p.rapidapi.com/exercises';
-      const options = {
-        method: 'GET',
-        headers: {
-          'x-rapidapi-key': 'e4b39e3ffcmsh8f1f62f26283938p1d7201jsn56518a621cdc',
-          'x-rapidapi-host': 'exercisedb.p.rapidapi.com',
-        },
-      };
-
+    const fetchData = async () => {
       try {
-        const response = await fetch(url, options);
-        const data = await response.json();
+        // Fetch body parts
+        const bodyPartsUrl = 'https://exercisedb.p.rapidapi.com/exercises/bodyPartList';
+        const bodyPartsOptions = {
+          method: 'GET',
+          headers: {
+            'x-rapidapi-key': 'e4b39e3ffcmsh8f1f62f26283938p1d7201jsn56518a621cdc',
+            'x-rapidapi-host': 'exercisedb.p.rapidapi.com',
+          },
+        };
+        const bodyPartsResponse = await fetch(bodyPartsUrl, bodyPartsOptions);
+        const bodyPartsData = await bodyPartsResponse.json();
+        setBodyPart(bodyPartsData);
 
-        // Assuming bodyParts data is part of the response
-        setBodyParts(data);
+        // Fetch all exercises
+        const exercisesUrl = 'https://gym-workout1.p.rapidapi.com/exercise';
+        const exercisesOptions = {
+          method: 'GET',
+          headers: {
+            'x-rapidapi-key': 'e4b39e3ffcmsh8f1f62f26283938p1d7201jsn56518a621cdc',
+            'x-rapidapi-host': 'gym-workout1.p.rapidapi.com',
+          },
+        };
+        const exercisesResponse = await fetch(exercisesUrl, exercisesOptions);
+        const exercisesData = await exercisesResponse.json();
+        setAllExercises(exercisesData);
+
+        // Set initial exercises
+        setExercises(exercisesData);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
 
-    fetchExerciseData();
-  }, []);
+    fetchData();
+  }, [setBodyPart, setExercises]);
 
+  // Search exercises based on the search input
   const handleSearch = async () => {
-    const url = 'https://exercisedb.p.rapidapi.com/exercises';
-    const options = {
-      method: 'GET',
-      headers: {
-        'x-rapidapi-key': 'e4b39e3ffcmsh8f1f62f26283938p1d7201jsn56518a621cdc',
-        'x-rapidapi-host': 'exercisedb.p.rapidapi.com',
-      },
-    };
-
     try {
-      const response = await fetch(url, options);
-      const result = await response.json();
-
-      // Filter the exercises based on the search criteria
-      const searchedExercises = result.filter((exercise) =>
-        exercise.name.toLowerCase().includes(search) ||
-        exercise.target.toLowerCase().includes(search) ||
-        exercise.equipment.toLowerCase().includes(search) ||
-        exercise.bodyPart.toLowerCase().includes(search)
-      );
+      const searchedExercises = allExercises.filter((exercise) => {
+        const searchLower = search.toLowerCase();
+        return exercise.name.toLowerCase().includes(searchLower) ||
+               exercise.target.toLowerCase().includes(searchLower) ||
+               exercise.equipment.toLowerCase().includes(searchLower) ||
+               exercise.bodyPart.toLowerCase().includes(searchLower);
+      });
 
       setSearch('');
       setExercises(searchedExercises);
-      console.log(searchedExercises);
+      console.log('Filtered Exercises:', searchedExercises);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error searching exercises:', error);
     }
   };
 
   return (
-    <Stack alignItems={'center'} mt='37px' justifyContent='center' p="20px">
-      <Typography fontWeight={800} sx={{ fontSize: { lg: '44px', xs: "30px" } }} textAlign='center'>
+    <Stack alignItems="center" mt="37px" justifyContent="center" p="20px">
+      <Typography fontWeight={800} sx={{ fontSize: { lg: '44px', xs: '30px' } }} textAlign="center">
         Awesome Exercises You <br />
         Should Know
       </Typography>
@@ -85,26 +86,29 @@ export default function SearchExercises() {
           height="76px"
           value={search}
           onChange={(e) => setSearch(e.target.value.toLowerCase())}
-          placeholder='Search Exercises'
-          type='text'
+          placeholder="Search Exercises"
+          type="text"
         />
-       <button className='search-btn'
-onClick={()=>handleSearch()}
-sx={{
-  backgroundColor:"#FF2625",
-  color:'#fff',
-  textTransform:'none',
-  width:{lg:'175px',xs:"80px"},
-  fontSize:{lg:'20px',xs:"14px"},
-right:'0'
-
-}
-}
->Search</button>
+        <Button
+          className="search-btn"
+          onClick={handleSearch}
+          sx={{
+            backgroundColor: "#FF2625",
+            color: '#fff',
+            textTransform: 'none',
+            width: { lg: '175px', xs: '80px' },
+            fontSize: { lg: '20px', xs: '14px' },
+            position: 'absolute',
+            right: '0',
+            top: '0',
+          }}
+        >
+          Search
+        </Button>
       </Box>
-    <Box sx={{position:'relative',width:'100%',p:'20px'}}>
-<HorizontalScrollBar bodyPart={bodyPart}/>
-    </Box>
+      <Box sx={{ position: 'relative', width: '100%', p: '20px' }}>
+        <HorizontalScrollBar data={bodyPart} bodyPart={bodyPart} setBodyPart={setBodyPart} />
+      </Box>
     </Stack>
-  )
+  );
 }
